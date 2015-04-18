@@ -16,6 +16,7 @@ module.exports = function(grunt) {
             src: {
                 files: [
             	   {expand: true, dest: 'dist/', src: ['src/index.html']},
+            	   {expand: true, dest: 'dist/', src: ['src/game.js']},
             	   {expand: true, dest: 'dist/', src: ['src/**/*.js']},
                 ]
             }
