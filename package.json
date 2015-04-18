@@ -1,0 +1,33 @@
+{
+  "name": "LD32",
+  "version": "0.0.0",
+  "description": "A game made for Ludum Dare #32: An Unconventional Weapon",
+  "main": "Gruntfile.js",
+  "dependencies": {
+    "grunt": "~0.4.5",
+    "bower": "~1.4.1"
+  },
+  "devDependencies": {
+    "connect": "~3.3.5",
+    "grunt-contrib-copy": "~0.8.0",
+    "grunt-contrib-jasmine": "~0.8.2",
+    "grunt-contrib-jshint": "~0.11.2",
+    "grunt-contrib-stylus": "~0.21.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-template-jasmine-requirejs": "~0.2.3",
+    "serve-static": "~1.9.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Bootjack/ld32"
+  },
+  "author": "Jason Hinebaugh",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/Bootjack/ld32/issues"
+  },
+  "homepage": "https://github.com/Bootjack/ld32"
+}
