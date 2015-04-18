@@ -5,16 +5,13 @@ module.exports = function(grunt) {
 
         copy: {
             main: {
-                files: [
-                	{
-                	   dest: 'dist/require.js',
-                	   src: ['bower_components/requirejs/require.js']
-            	    },
-            	    {
-                	   dest: 'dist/proscenium.js',
-                	   src: ['lib/proscenium/proscenium.js']
-            	    }                	
-            	]
+                files: {
+            	   'dist/jquery.js': ['lib/jquery/jquery-2.1.3.js'],
+               	   'dist/jquery.mobile.js': ['lib/jquery/jquery.mobile.custom.js'],
+            	   'dist/require.js': ['bower_components/requirejs/require.js'],
+            	   'dist/snap.js': ['lib/snapsvg/snap.svg.js'],
+            	   'dist/proscenium.js': ['lib/proscenium/proscenium.js']
+        	    }                	
             }
         },
 
