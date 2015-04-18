@@ -105,6 +105,7 @@ require([
             }
             function denyAim() {
                 isAimAllowed = false;
+                clearTimeout(aimTimeout);
                 player.stop();
             }
             $('#game-container').on({
