@@ -4,16 +4,20 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         copy: {
-            main: {
+            lib: {
                 files: {
-            	   'dist/index.html': ['src/index.html'],
-            	   'dist/game.js': ['src/game.js'],
             	   'dist/jquery.js': ['lib/jquery/jquery-2.1.3.js'],
                	   'dist/jquery.mobile.js': ['lib/jquery/jquery.mobile.custom.js'],
             	   'dist/require.js': ['bower_components/requirejs/require.js'],
             	   'dist/snap.js': ['lib/snapsvg/snap.svg.js'],
             	   'dist/proscenium.js': ['lib/proscenium/proscenium.js']
         	    }
+            },
+            src: {
+                files: [
+            	   {expand: true, dest: 'dist/', src: ['src/index.html']},
+            	   {expand: true, dest: 'dist/', src: ['src/**/*.js']},
+                ]
             }
         },
 
@@ -72,11 +76,11 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: ['src/**/*.js'],
-                tasks: ['jshint']
+                tasks: ['jshint', 'copy']
             },
             stylesheets: {
                 files: ['stylus/**/*.styl'],
-                tasks: ['stylus']
+                tasks: ['stylus', 'copy']
             }
         }
     });

@@ -1,5 +1,5 @@
 
-/* line 8 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+/* line 32 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 
 /* line 1 : /home/jason/Documents/Projects/LD32/node_modules/grunt-contrib-stylus/node_modules/stylus/lib/functions/index.styl */
 
@@ -89,4 +89,10 @@ table{border-collapse:collapse;border-spacing:0}
 /* line 381 : /home/jason/Documents/Projects/LD32/bower_components/normalize.styl/normalize.styl */
 td,th{padding:0}
 /* line 3 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
-#game-container{height:100%;max-height:100%;max-width:100%;position:absolute;width:100%}
+#game-container{background-color:#0ff;height:100%;max-height:100%;max-width:100%;position:absolute;width:100%}
+/* line 11 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+.curtain{height:100%;left:0;max-height:100%;max-width:100%;position:absolute;top:0;width:100%}
+/* line 20 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage{display:block;height:100%;margin:0 auto;max-height:100%;max-width:400px;position:relative;width:100%;}
+/* line 29 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .conductor{fill:#ffd700;stroke:#000080;stroke-width:12px}
