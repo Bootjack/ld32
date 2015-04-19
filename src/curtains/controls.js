@@ -27,7 +27,7 @@ define(['proscenium'], function (Proscenium) {
                 }
             }
             
-            $(this.element).on({
+            $stage.on({
                 vmousemove: adjustAim,
                 vmousedown: adjustAim,
                 vmouseup: adjustAim

@@ -1,10 +1,19 @@
 define(['proscenium'], function (Proscenium) {
     var solved = {
         test: function () {
-            var conductor, exit, position;
+            var allPunched, conductor, endZone, passengers;
             conductor = Proscenium.actors.conductor;
-            position = {x: conductor.state.x, y: conductor.state.y};
-            return (conductor.state.y < 200);
+            passengers = Proscenium.roles.passenger.members;
+            endZone = Proscenium.actors.endZone;
+            
+            atExit = conductor.state.atExit;
+            allPunched = passengers.every(function (passenger) {
+                return passenger.state.punched;
+            });
+
+            endZone.set('unlocked', allPunched);
+            
+            return (allPunched && atExit);
         },
         run: function () {
             Proscenium.scenes.train.end();
@@ -25,28 +34,33 @@ define(['proscenium'], function (Proscenium) {
             this.conditions.push(solved.bind(this));
         },
         prep: function () {
-            var conductor, safeZone;
+            var conductor, endZone, passengers, safeZone;
             
             conductor = Proscenium.actors.conductor;
             safeZone = Proscenium.actor('safeZone');
+            endZone = Proscenium.actor('endZone').set('unlocked', false);
+            
+            passengers = [Proscenium.actor().role('passenger').set('x', 100).set('y', 240)];
 
-            this.actors = [];
+            this.actors = this.actors.concat(conductor, endZone, passengers, safeZone);
             
             conductor.set('x', 200);
             conductor.set('y', 540);
             conductor.set('velocity', {x: 0, y: 0});
-
-            this.actors.push(conductor);
+            conductor.set('atExit', false);
             
             safeZone.set('bounds', [
                 {x: 26, y: 26},
                 {x: 374, y: 574}
             ]);
             
-            Proscenium.curtains.controls.update();
+            endZone.set('bounds', [
+                {x: 150, y: 0},
+                {x: 250, y: 60}
+            ]);
         },
         clear: function () {
-            
+            this.actors = [];
         }
     };
 });

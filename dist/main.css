@@ -1,5 +1,5 @@
 
-/* line 94 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+/* line 111 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 
 /* line 1 : /home/jason/Documents/Projects/LD32/node_modules/grunt-contrib-stylus/node_modules/stylus/lib/functions/index.styl */
 
@@ -118,4 +118,14 @@ td,th{padding:0}
 /* line 87 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 #snap-stage .conductor{fill:#ffd700;stroke:#000080;stroke-width:12px}
 /* line 92 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .passenger{fill:#fff;stroke:#808080;stroke-width:12px;}
+/* line 96 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .passenger.punched{stroke:#0ff}
+/* line 98 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .passenger.near-conductor{cursor:pointer}
+/* line 101 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 #snap-stage .safe-zone{fill:transparent;stroke-width:0}
+/* line 105 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .end-zone{fill:transparent;stroke:#f00;stroke-dasharray:5px,5px;stroke-width:2px;}
+/* line 110 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .end-zone.unlocked{stroke:#0ff}

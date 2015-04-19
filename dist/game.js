@@ -9346,7 +9346,7 @@ define('proscenium',[], function () {
                 role.members.push(this);
                 for (property in role.definition) {
                     if ('prep' === property) {
-                        this.prepartions.push(role.definition[property]);
+                        this.preparations.push(role.definition[property]);
                     } else if ('evaluate' === property) {
                         this.evaluations.push(role.definition[property]);
                     } else if ('init' !== property) {
@@ -9520,6 +9520,9 @@ define('proscenium',[], function () {
         if ('function' === typeof config.prep) {
             this.prep = config.prep.bind(this);
         }
+        if ('function' === typeof config.clear) {
+            this.clear = config.clear.bind(this);
+        }
         if ('function' === typeof config.init) {
             config.init.call(this);
         }
@@ -9620,14 +9623,16 @@ define('proscenium',[], function () {
         return this;
     };
     Scene.prototype.cleanup = function () {
+        var scene = this;
         this.curtains.forEach(function (curtain) {
-            curtain.clear();
+            curtain.clear(scene);
         });
         this.stages.forEach(function (stage) {
-            if ('function' === typeof stage.clear) {
-                stage.clear();
-            }
+            stage.clear(scene);
         });
+        if ('function' === typeof this.clear) {
+            this.clear();
+        }
         return this;
     };
     Scene.prototype.begin = function (config) {
@@ -9667,6 +9672,7 @@ define('proscenium',[], function () {
             config.init.call(this);
         }
     };
+    Stage.prototype.clear = function () {};
     'use strict';
     var Proscenium = { 
         actors: {},
@@ -20608,8 +20614,8 @@ define('curtains/splash',['proscenium'], function (Proscenium) {
 define('roles/conductor',['proscenium'], function (Proscenium) {
     return {
         init: function () {
-            this.state.radius = 20;
-            this.state.speed = 120;
+            this.set('radius', 20);
+            this.set('speed', 120);
         },
         evaluate: function (interval) {
             var delta = {
@@ -20626,7 +20632,7 @@ define('roles/conductor',['proscenium'], function (Proscenium) {
                 y: point.y - this.state.y
             };
             distance = Math.sqrt(Math.pow(delta.x, 2) + Math.pow(delta.y, 2));
-            if (distance > 2.5 * this.state.radius) {
+            if (distance > 1.5 * this.state.radius) {
                 this.set('velocity', {
                     x: speed * (delta.x / distance),
                     y: speed * (delta.y / distance)
@@ -20648,6 +20654,21 @@ define('roles/conductor',['proscenium'], function (Proscenium) {
         }
     };
 });
+define('roles/passenger',['proscenium'], function (Proscenium) {
+    return {
+        init: function () {
+            this.set('radius', 20);
+        },
+        prep: function (config) {
+            config = config || {};
+            this.set('punched', false);
+
+            this.set('x', config.x);
+            this.set('y', config.y);
+            this.set('destination', config.destination);
+        }
+    };
+});
 define('scenes/title',['proscenium'], function (Proscenium) {
     return {
         curtains: ['splash'],
@@ -20663,8 +20684,7 @@ define('scenes/train',['proscenium'], function (Proscenium) {
         test: function () {
             var conductor, exit, position;
             conductor = Proscenium.actors.conductor;
-            position = {x: conductor.state.x, y: conductor.state.y};
-            return (conductor.state.y < 200);
+            return (conductor.state.atExit);
         },
         run: function () {
             Proscenium.scenes.train.end();
@@ -20685,28 +20705,33 @@ define('scenes/train',['proscenium'], function (Proscenium) {
             this.conditions.push(solved.bind(this));
         },
         prep: function () {
-            var conductor, safeZone;
+            var conductor, endZone, passengers, safeZone;
             
             conductor = Proscenium.actors.conductor;
             safeZone = Proscenium.actor('safeZone');
+            endZone = Proscenium.actor('endZone');
+            
+            passengers = [Proscenium.actor().role('passenger').set('x', 100).set('y', 240)];
 
-            this.actors = [];
+            this.actors = this.actors.concat(conductor, endZone, passengers, safeZone);
             
             conductor.set('x', 200);
             conductor.set('y', 540);
             conductor.set('velocity', {x: 0, y: 0});
-
-            this.actors.push(conductor);
+            conductor.set('atExit', false);
             
             safeZone.set('bounds', [
                 {x: 26, y: 26},
                 {x: 374, y: 574}
             ]);
             
-            Proscenium.curtains.controls.update();
+            endZone.set('bounds', [
+                {x: 150, y: 0},
+                {x: 250, y: 60}
+            ]);
         },
         clear: function () {
-            
+            this.actors = [];
         }
     };
 });
@@ -20722,17 +20747,12 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
         },
         prep: function (config) {
             config = config || {};
-            var conductor, safeZone;
+            var conductor, endZone, passengers, safeZone;
             
             conductor = Proscenium.actors.conductor;
+            passengers = Proscenium.roles.passengers.members;
+            endZone = Proscenium.actors.endZone;
             safeZone = Proscenium.actors.safeZone;
-                        
-            conductor.svg = this.snap.circle(
-                conductor.state.x,
-                conductor.state.y,
-                conductor.state.radius
-            );
-            conductor.svg.addClass('conductor');
             
             safeZone.svg = this.snap.path(
                 'M' + safeZone.state.bounds[0].x + ',' + safeZone.state.bounds[0].y +
@@ -20741,19 +20761,43 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
                 'L' + safeZone.state.bounds[0].x + ',' + safeZone.state.bounds[1].y +
                 'Z'
             ).addClass('safe-zone');
+            
+            endZone.svg = this.snap.path(
+                'M' + endZone.state.bounds[0].x + ',' + endZone.state.bounds[0].y +
+                'L' + endZone.state.bounds[1].x + ',' + endZone.state.bounds[0].y +
+                'L' + endZone.state.bounds[1].x + ',' + endZone.state.bounds[1].y +
+                'L' + endZone.state.bounds[0].x + ',' + endZone.state.bounds[1].y +
+                'Z'
+            ).addClass('end-zone');
+            
+            conductor.svg = this.snap.circle(
+                conductor.state.x,
+                conductor.state.y,
+                conductor.state.radius
+            );
+            conductor.svg.addClass('conductor');
+            
+            passengers.forEach(function (passenger) {
+                passenger.svg = this.snap.circle(
+                    passenger.state.x,
+                    passenger.state.y,
+                    passenger.state.radius
+                );
+            }.bind(this)).addClass('passenger');
         },
         evaluate: function () {
-            var conductor, conductorPosition, isInSafeZone, safeZone, safeZoneBounds;
+            var conductor, conductorPosition, endZone, inEndZone, inSafeZone, safeZone, safeZoneBounds;
             
             conductor = Proscenium.actors.conductor;
+            endZone = Proscenium.actors.endZone;
             safeZone = Proscenium.actors.safeZone;
             safeZoneBounds = safeZone.state.bounds;
-            
+                        
             conductorPosition = {x: conductor.state.x, y: conductor.state.y};
             
-            isInSafeZone = Snap.path.isPointInside(safeZone.svg, conductorPosition.x, conductorPosition.y);
+            inSafeZone = Snap.path.isPointInside(safeZone.svg, conductorPosition.x, conductorPosition.y);
             
-            if (!isInSafeZone) {
+            if (!inSafeZone) {
                 conductor.set('x', 
                     constrain(conductor.state.x, safeZoneBounds[0].x + 1, safeZoneBounds[1].x - 1)
                 );
@@ -20764,10 +20808,18 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
             
             conductor.svg.attr('cx', conductor.state.x);
             conductor.svg.attr('cy', conductor.state.y);
+            
+            inEndZone = Snap.path.isPointInside(endZone.svg, conductorPosition.x, conductorPosition.y);
+            if (inEndZone) {
+                conductor.set('atExit', true);
+            }
         },
-        clear: function () {
-            var conductor = Proscenium.actors.conductor;
-            conductor.svg.remove();
+        clear: function (scene) {
+            scene.actors.forEach(function (actor) {
+                if (actor.svg && 'function' === typeof actor.svg.remove) {
+                    actor.svg.remove();
+                }
+            });
         }
     };
 });
@@ -20785,6 +20837,7 @@ require([
         'curtains/controls',
         'curtains/splash',
         'roles/conductor',
+        'roles/passenger',
         'scenes/title',
         'scenes/train',
         'stages/snap'
@@ -20792,11 +20845,13 @@ require([
         controlsCurtain,
         splashCurtain,
         conductorRole,
+        passengerRole,
         titleScene,
         trainScene,
         snapStage
     ) {
         Proscenium.role('conductor', conductorRole);
+        Proscenium.role('passenger', passengerRole);
 
         Proscenium.actor('conductor').role('conductor');
 

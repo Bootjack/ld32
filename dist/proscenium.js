@@ -140,7 +140,7 @@ define([], function () {
                 role.members.push(this);
                 for (property in role.definition) {
                     if ('prep' === property) {
-                        this.prepartions.push(role.definition[property]);
+                        this.preparations.push(role.definition[property]);
                     } else if ('evaluate' === property) {
                         this.evaluations.push(role.definition[property]);
                     } else if ('init' !== property) {
@@ -314,6 +314,9 @@ define([], function () {
         if ('function' === typeof config.prep) {
             this.prep = config.prep.bind(this);
         }
+        if ('function' === typeof config.clear) {
+            this.clear = config.clear.bind(this);
+        }
         if ('function' === typeof config.init) {
             config.init.call(this);
         }
@@ -414,14 +417,16 @@ define([], function () {
         return this;
     };
     Scene.prototype.cleanup = function () {
+        var scene = this;
         this.curtains.forEach(function (curtain) {
-            curtain.clear();
+            curtain.clear(scene);
         });
         this.stages.forEach(function (stage) {
-            if ('function' === typeof stage.clear) {
-                stage.clear();
-            }
+            stage.clear(scene);
         });
+        if ('function' === typeof this.clear) {
+            this.clear();
+        }
         return this;
     };
     Scene.prototype.begin = function (config) {
@@ -461,6 +466,7 @@ define([], function () {
             config.init.call(this);
         }
     };
+    Stage.prototype.clear = function () {};
     'use strict';
     var Proscenium = { 
         actors: {},

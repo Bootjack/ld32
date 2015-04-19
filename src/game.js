@@ -12,6 +12,7 @@ require([
         'curtains/controls',
         'curtains/splash',
         'roles/conductor',
+        'roles/passenger',
         'scenes/title',
         'scenes/train',
         'stages/snap'
@@ -19,11 +20,13 @@ require([
         controlsCurtain,
         splashCurtain,
         conductorRole,
+        passengerRole,
         titleScene,
         trainScene,
         snapStage
     ) {
         Proscenium.role('conductor', conductorRole);
+        Proscenium.role('passenger', passengerRole);
 
         Proscenium.actor('conductor').role('conductor');
 
