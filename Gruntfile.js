@@ -15,32 +15,9 @@ module.exports = function(grunt) {
             },
             src: {
                 files: [
-            	   {expand: true, dest: 'dist/', src: ['src/index.html']},
-            	   {expand: true, dest: 'dist/', src: ['src/game.js']},
+            	   {expand: true, flatten: true, dest: 'dist/', src: ['src/index.html']},
             	   {expand: true, dest: 'dist/', src: ['src/**/*.js']},
                 ]
-            }
-        },
-
-        jasmine: {
-            pivotal: {
-                src: 'src/proscenium.js',
-                options: {
-                    specs: 'spec/*-spec.js',
-                    helpers: 'spec/*-helper.js',
-                    outfile: 'test-results.html',
-                    keepRunner: true,
-                    template: require('grunt-template-jasmine-requirejs'),
-                    templateOptions: {
-                        requireConfig: {
-                            baseUrl: './',
-                            deps: [
-                                'bower_components/modernizr/modernizr',
-                                'lib/bind-shim'
-                            ]
-                        }
-                    }
-                }
             }
         },
 
@@ -53,11 +30,18 @@ module.exports = function(grunt) {
         requirejs: {
             main: {
                 options: {
-                    baseUrl: './',
+                    baseUrl: './src',
                     findNestedDependencies: true,
-                    name: 'src/proscenium.js',
+                    name: 'game',
                     optimize: 'none',
-                    out: 'dist/proscenium.amd.js'
+                    out: 'dist/game.js',
+                    paths: {
+                        'modernizr': '../bower_components/modernizr/modernizr',
+                        'jquery': '../lib/jquery/jquery-2.1.3',
+                        'jquery.mobile': '../lib/jquery/jquery.mobile.custom',
+                        'proscenium': '../lib/proscenium/proscenium',
+                        'snap': '../lib/snapsvg/snap.svg'
+                    }
                 }
             }
         },
@@ -88,8 +72,8 @@ module.exports = function(grunt) {
 
     // Load tasks (must be installed via npm first)
     grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-stylus');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
