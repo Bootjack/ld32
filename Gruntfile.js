@@ -15,8 +15,7 @@ module.exports = function(grunt) {
             },
             src: {
                 files: [
-            	   {expand: true, flatten: true, dest: 'dist/', src: ['src/index.html']},
-            	   {expand: true, dest: 'dist/', src: ['src/**/*.js']},
+            	   {expand: true, flatten: true, dest: 'dist/', src: ['src/index.html']}
                 ]
             }
         },
@@ -78,7 +77,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Default task(s).
-    grunt.registerTask('default', ['jshint', 'copy', 'stylus']);
+    grunt.registerTask('default', ['jshint', 'requirejs', 'copy', 'stylus']);
     grunt.registerTask('test', ['jshint', 'jasmine']);
     grunt.registerTask('build', ['jshint', 'jasmine', 'requirejs', 'stylus']);
 };
