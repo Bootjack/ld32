@@ -46,12 +46,22 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
                 'Z'
             ).addClass('end-zone');
             
+            conductor.svg = snap.g();
+            Snap.load('svg/conductor.svg', function (svg) {
+                var matrix = new Snap.matrix();
+                matrix.scale(0.35);
+                svg.select('g').transform(matrix);
+                conductor.svg.append(svg);
+            });            
+            
+            /*
             conductor.svg = snap.circle(
                 conductor.state.x,
                 conductor.state.y,
                 conductor.state.radius
             );
             conductor.svg.addClass('conductor');
+            */
             
             passengers.forEach(function (passenger) {
                 passenger.svg = snap.circle(
@@ -70,10 +80,11 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
             });
         },
         evaluate: function () {
-            var conductor, conductorPosition, endZone, inEndZone, inSafeZone, passengers, 
-                passengerNearConductorFilter, safeZone, safeZoneBounds;
+            var conductor, conductorPosition, conductorMatrix, conductorOffset, endZone, inEndZone, 
+                inSafeZone, obstacles, passengers, passengerNearConductorFilter, safeZone, safeZoneBounds;
             
             conductor = Proscenium.actors.conductor;
+            obstacles = Proscenium.roles.obstacle.members;
             passengers = Proscenium.roles.passenger.members;
             endZone = Proscenium.actors.endZone;
             safeZone = Proscenium.actors.safeZone;
@@ -98,6 +109,10 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
                 passenger.svg.toggleClass('punched', passenger.state.punched);
             });
             
+            obstacles.forEach(function (obstacle) {
+                
+            });
+            
             inSafeZone = Snap.path.isPointInside(safeZone.svg, conductorPosition.x, conductorPosition.y);
             
             if (!inSafeZone) {
@@ -109,8 +124,22 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
                 );
             }
             
-            conductor.svg.attr('cx', conductor.state.x);
-            conductor.svg.attr('cy', conductor.state.y);
+            conductorMatrix = new Snap.matrix();
+            conductorOffset = conductor.svg.getBBox();
+            conductorOffset = {
+                x: 0.5 * conductorOffset.width,
+                y: 0.5 * conductorOffset.height
+            };
+            conductorMatrix.translate(
+                conductor.state.x - conductorOffset.x,
+                conductor.state.y - conductorOffset.y
+            );
+            conductor.svg.transform(conductorMatrix);
+            
+            /*
+            conductor.svg.attr('x', conductor.state.x);
+            conductor.svg.attr('y', conductor.state.y);
+            */
             
             endZone.svg.toggleClass('unlocked', endZone.state.unlocked);
             inEndZone = Snap.path.isPointInside(endZone.svg, conductorPosition.x, conductorPosition.y);
