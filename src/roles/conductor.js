@@ -19,7 +19,7 @@ define(['proscenium'], function (Proscenium) {
                 y: point.y - this.state.y
             };
             distance = Math.sqrt(Math.pow(delta.x, 2) + Math.pow(delta.y, 2));
-            if (distance > 1.5 * this.state.radius) {
+            if (distance > this.state.radius) {
                 this.set('velocity', {
                     x: speed * (delta.x / distance),
                     y: speed * (delta.y / distance)

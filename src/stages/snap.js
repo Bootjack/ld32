@@ -92,7 +92,7 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
                 } else {
                     passenger.svg.removeClass('near-conductor');
                     passenger.svg.attr({
-                        filter: null
+                        filter: ''
                     });
                 }
                 passenger.svg.toggleClass('punched', passenger.state.punched);
@@ -114,9 +114,7 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
             
             endZone.svg.toggleClass('unlocked', endZone.state.unlocked);
             inEndZone = Snap.path.isPointInside(endZone.svg, conductorPosition.x, conductorPosition.y);
-            if (inEndZone) {
-                conductor.set('atExit', true);
-            }
+            conductor.set('atExit', inEndZone);
         },
         clear: function (scene) {
             scene.actors.forEach(function (actor) {
