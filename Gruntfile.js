@@ -15,7 +15,8 @@ module.exports = function(grunt) {
             },
             src: {
                 files: [
-            	   {expand: true, flatten: true, dest: 'dist/', src: ['src/index.html']}
+            	   {expand: true, flatten: true, dest: 'dist/', src: ['src/index.html']},
+            	   {expand: true, dest: 'dist/', src: ['svg/*']}
                 ]
             }
         },
