@@ -25,7 +25,7 @@ require([
     ) {
         Proscenium.role('conductor', conductorRole);
 
-        Proscenium.actor().role('conductor');
+        Proscenium.actor('conductor').role('conductor');
 
         Proscenium.stage('snap', snapStage);
 
@@ -36,5 +36,8 @@ require([
         Proscenium.scene('train', trainScene);
         
         Proscenium.scenes.title.begin();
+        
+        window.title = Proscenium.scenes.title;
+        window.train = Proscenium.scenes.train;
     });
 });

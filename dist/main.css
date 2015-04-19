@@ -1,5 +1,5 @@
 
-/* line 72 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+/* line 77 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 
 /* line 1 : /home/jason/Documents/Projects/LD32/node_modules/grunt-contrib-stylus/node_modules/stylus/lib/functions/index.styl */
 
@@ -92,22 +92,24 @@ td,th{padding:0}
 @import url("http://fonts.googleapis.com/css?family=Cutive");
 
 /* line 4 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
-#game-container{background-color:#ffff80;height:100%;max-height:100%;max-width:100%;position:absolute;width:100%}
-/* line 12 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#game-container{background-color:#ffff80;height:100%;position:absolute;width:100%}
+/* line 10 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 .curtain{height:100%;left:0;max-height:100%;max-width:100%;position:absolute;top:0;width:100%}
-/* line 21 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+/* line 19 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 
-/* line 22 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
-#splash-curtain .game-title{background:#fff;box-shadow:0 2px 4px #e5e600;color:#0ff;font-weight:bold;text-align:center;margin:20% auto 0 auto;padding:.25em 1.5em;text-shadow:-1px -1px 1px #b4b4be,1px 1px 2px #fff;width:400px;}
-/* line 35 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
-#splash-curtain .game-title h1{font-family:'Cutive',serif;font-size:3em}
+/* line 20 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#splash-curtain .game-title{background:#fff;box-shadow:0 2px 4px #e5e600;color:#0ff;font-weight:bold;text-align:center;margin:20% auto 0 auto;max-width:80%;padding:.25em 1.5em;width:400px;}
+/* line 31 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#splash-curtain .game-title h1{font-family:'Cutive',serif;font-size:3em;line-height:1.1em;text-shadow:-1px -1px .5px #bebec8,1px 1px .5px #fff}
 /* line 39 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 #splash-curtain .game-title button.start{background:#0ff;border:3px solid #fff;border-radius:.5em;color:#fff;margin:0 0 2em 0;padding:.5em;text-transform:uppercase}
 /* line 48 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
-#splash-curtain .game-about{color:#b4b4b4;font-size:.8em;margin:2em auto;text-align:center;width:400px;}
-/* line 55 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#splash-curtain .game-about{color:#b4b4b4;font-size:.8em;margin:2em auto;max-width:80%;text-align:center;width:400px;}
+/* line 56 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 #splash-curtain .game-about p{margin:.5em 0}
-/* line 58 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
-#snap-stage{background:#ffffc8;box-shadow:inset 0 0 4px #fff;display:block;height:100%;margin:0 auto;max-height:100%;max-width:400px;position:relative;width:100%;}
-/* line 69 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+/* line 59 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage{background:#ffffc8;box-shadow:inset 0 0 4px #fff;display:block;height:100%;margin:2.5% auto 0 auto;max-height:600px;max-width:400px;position:relative;width:90%;}
+/* line 70 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
 #snap-stage .conductor{fill:#ffd700;stroke:#000080;stroke-width:12px}
+/* line 75 : /home/jason/Documents/Projects/LD32/stylus/main.styl */
+#snap-stage .safe-zone{fill:transparent;stroke-width:0}

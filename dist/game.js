@@ -9317,15 +9317,16 @@ define('proscenium',[], function () {
     'use strict';
     var Actor = function(config) {
         config = config || {};
-        this.state = {};
-        this.roles = [];
+        this.evaluations = [];
         this.id = config.id;
         this.preparations = [];
-        if (config.prep) {
+        this.roles = [];
+        this.state = {};
+        if ('function' === typeof config.prep) {
             this.preparations.push(config.prep);
         }
         if ('function' === typeof config.evaluate) {
-            this.evaluate = config.evaluate.bind(this);
+            this.evaluations.push(config.evaluate);
         }
         if ('function' === typeof config.init) {
             config.init.call(this);
@@ -9346,6 +9347,8 @@ define('proscenium',[], function () {
                 for (property in role.definition) {
                     if ('prep' === property) {
                         this.prepartions.push(role.definition[property]);
+                    } else if ('evaluate' === property) {
+                        this.evaluations.push(role.definition[property]);
                     } else if ('init' !== property) {
                         this[property] = role.definition[property];
                     }
@@ -9368,6 +9371,12 @@ define('proscenium',[], function () {
         var that = this;
         this.preparations.forEach(function (prep) {
             prep.call(that);
+        });
+    };
+    Actor.prototype.evaluate = function (interval) {
+        var that = this;
+        return this.evaluations.map(function (ev) {
+            return ev.call(that, interval);
         });
     };
     util.mixin(Actor, [Emitter]);
@@ -9490,6 +9499,7 @@ define('proscenium',[], function () {
         this.conditions = [];
         this.curtains = [];
         this.paused = false;
+	this.running = false;
         this.stages = [];
         this.always = config.always;
         this.throttle = config.throttle || 60;
@@ -9543,8 +9553,14 @@ define('proscenium',[], function () {
             this.always(interval);
         }
         this.actors.forEach(function (actor) {
+            var result;
             if ('function' === typeof actor.evaluate) {
-                evaluations.push(actor.evaluate(interval));
+                result = actor.evaluate(interval);
+                if ('function' === typeof result) {
+                    evaluations.push(result);
+                } else if (result instanceof Array) {
+                    evaluations = evaluations.concat(result);
+                }
             }
         });
         evaluations.forEach(function (execute) {
@@ -9595,23 +9611,35 @@ define('proscenium',[], function () {
                 this._framerate = Math.floor(1000 / Math.max(interval, 1));
             }
         }
-        this._timeout = setTimeout(
-            (function (self) {
-                return function () {
-                    self.run();
-                };
-            }(this)),
-            timeout
-        );
+        if (this.running) {
+            this._timeout = setTimeout(
+                this.run.bind(this),
+                timeout
+            );
+        }
+        return this;
+    };
+    Scene.prototype.cleanup = function () {
+        this.curtains.forEach(function (curtain) {
+            curtain.clear();
+        });
+        this.stages.forEach(function (stage) {
+            if ('function' === typeof stage.clear) {
+                stage.clear();
+            }
+        });
         return this;
     };
     Scene.prototype.begin = function (config) {
+        this.running = true;
         this._lastFrame = new Date().getTime();
         this.warmup(config);
         this.run();
     };
     Scene.prototype.end = function () {
+        this.running = false;
         clearTimeout(this._timeout);
+	this.cleanup();
     };
     'use strict';
     function phaseFactory(interval, offset) {
@@ -9631,6 +9659,9 @@ define('proscenium',[], function () {
         }
         if ('function' === typeof config.evaluate) {
             this.evaluate = config.evaluate.bind(this);
+        }
+        if ('function' === typeof config.clear) {
+            this.clear = config.clear.bind(this);
         }
         if ('function' === typeof config.init) {
             config.init.call(this);
@@ -20525,39 +20556,29 @@ define('curtains/controls',['proscenium'], function (Proscenium) {
     return {
         element: 'controls-curtain',
         init: function () {
-            var aimTimeout, conductor, isAimAllowed, $svg;
-            $stage = $('#snap-stage');
-            isAimAllowed = false;
+            var $stage = $('#snap-stage');
+            
             function adjustAim(event) {
-                var conductor, offset;
-                conductor = Proscenium.roles.conductor.members[0];
+                var conductor, offset, touchEvent, upEvent;
+                conductor = Proscenium.actors.conductor;
                 offset = $stage.offset();
+                touchEvent = (/^touch/).test(event.originalEvent.type);
+                upEvent = (/^vmouseup$/).test(event.type);
                 event.preventDefault();
-                if (isAimAllowed) {
+                if (!upEvent && (touchEvent || 1 === event.which)) {
                     conductor.aim({
                         x: event.pageX - offset.left,
                         y: event.pageY - offset.top
                     });
-                    isAimAllowed = false;
-                    aimTimeout = setTimeout(allowAim, 50);
+                } else {
+                    conductor.stop();
                 }
             }
-            function allowAim(event) {
-                isAimAllowed = true;
-                if (event) {
-                    adjustAim(event);
-                }
-            }
-            function denyAim() {
-                var conductor = Proscenium.roles.conductor.members[0];
-                isAimAllowed = false;
-                clearTimeout(aimTimeout);
-                conductor.stop();
-            }
+            
             $(this.element).on({
-                vmousedown: allowAim,
-                vmouseup: denyAim,
-                vmousemove: adjustAim
+                vmousemove: adjustAim,
+                vmousedown: adjustAim,
+                vmouseup: adjustAim
             });
         }
     };
@@ -20570,9 +20591,10 @@ define('curtains/splash',['proscenium'], function (Proscenium) {
             element = this.element;
             $element = $(element);
             $element.find('button.start').on('click', function (event) {
-                $element.hide();
+                event.stopPropagation();
                 Proscenium.scenes.title.end();
                 Proscenium.scenes.train.begin();
+                $element.hide();
             });
         }
     };
@@ -20582,9 +20604,6 @@ define('roles/conductor',['proscenium'], function (Proscenium) {
         init: function () {
             this.state.radius = 20;
             this.state.speed = 120;
-            this.state.velocity = {x: 0, y: 0};
-            this.state.x = 200;
-            this.state.y = 100;
         },
         evaluate: function (interval) {
             var delta = {
@@ -20602,42 +20621,73 @@ define('roles/conductor',['proscenium'], function (Proscenium) {
             };
             distance = Math.sqrt(Math.pow(delta.x, 2) + Math.pow(delta.y, 2));
             if (distance > 2.5 * this.state.radius) {
-                this.state.velocity = {
+                this.set('velocity', {
                     x: speed * (delta.x / distance),
                     y: speed * (delta.y / distance)
-                };
+                });
             } else {
                 this.stop();
             }
         },
         walk: function (delta) {
-            this.state.x += delta.x;
-            this.state.y += delta.y;
+            this.set('x', this.state.x + delta.x);
+            this.set('y', this.state.y + delta.y);
         },
         stop: function () {
-            this.state.velocity = {x: 0, y: 0};
+            this.set('velocity', {x: 0, y: 0});
         }
     };
 });
 define('scenes/title',['proscenium'], function (Proscenium) {
     return {
-        curtains: ['splash']
+        curtains: ['splash'],
+        prep: function () {
+            var $splash = $(Proscenium.curtains.splash.element);
+            $splash.show();
+        }
     };
 });
 
 define('scenes/train',['proscenium'], function (Proscenium) {
+    var solved = {
+        test: function () {
+            var conductor, exit, position;
+            conductor = this.conductor;
+            position = {x: conductor.state.x, y: conductor.state.y};
+            return (conductor.state.y < 200);
+        },
+        run: function () {
+            Proscenium.scenes.train.end();
+            Proscenium.scenes.title.begin();
+        },
+        bind: function (scope) {
+            return {
+                test: solved.test.bind(scope),
+                run: solved.run.bind(scope)
+            };
+        }
+    };
+    
     return {
         curtains: ['controls'],
         stages: ['snap'],
+        init: function () {
+            this.conductor = Proscenium.roles.conductor.members[0];
+            this.conditions.push(solved.bind(this));
+        },
         prep: function () {
-            var conductor = Proscenium.roles.conductor.members[0];
+            var conductor = this.conductor;
+            conductor.set('x', 200);
+            conductor.set('y', 560);
+            conductor.set('velocity', {x: 0, y: 0});
+            this.actors = [];
             this.actors.push(conductor);
+            Proscenium.curtains.controls.update();
         }
     };
 });
 define('stages/snap',['proscenium'], function (Proscenium) {
     return {
-        throttle: 60,
         init: function () {
             this.snap = Snap('#snap-stage');
             this.conductor = Proscenium.roles.conductor.members[0];
@@ -20656,6 +20706,10 @@ define('stages/snap',['proscenium'], function (Proscenium) {
             var conductor = this.conductor;
             conductor.svg.attr('cx', conductor.state.x);
             conductor.svg.attr('cy', conductor.state.y);
+        },
+        clear: function () {
+            var conductor = this.conductor;
+            conductor.svg.remove();
         }
     };
 });
@@ -20686,7 +20740,7 @@ require([
     ) {
         Proscenium.role('conductor', conductorRole);
 
-        Proscenium.actor().role('conductor');
+        Proscenium.actor('conductor').role('conductor');
 
         Proscenium.stage('snap', snapStage);
 
@@ -20697,6 +20751,9 @@ require([
         Proscenium.scene('train', trainScene);
         
         Proscenium.scenes.title.begin();
+        
+        window.title = Proscenium.scenes.title;
+        window.train = Proscenium.scenes.train;
     });
 });
 define("game", function(){});

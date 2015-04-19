@@ -6,9 +6,10 @@ define(['proscenium'], function (Proscenium) {
             element = this.element;
             $element = $(element);
             $element.find('button.start').on('click', function (event) {
-                $element.hide();
+                event.stopPropagation();
                 Proscenium.scenes.title.end();
                 Proscenium.scenes.train.begin();
+                $element.hide();
             });
         }
     };

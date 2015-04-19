@@ -1,5 +1,9 @@
 define(['proscenium'], function (Proscenium) {
     return {
-        curtains: ['splash']
+        curtains: ['splash'],
+        prep: function () {
+            var $splash = $(Proscenium.curtains.splash.element);
+            $splash.show();
+        }
     };
 });
