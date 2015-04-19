@@ -19,13 +19,14 @@
 #splash-curtain
     .game-title
         background: white
-        box-shadow: 0 2px 4px darken(yellow, 10%)
+        box-shadow: 0 2px 2px darken(yellow, 10%)
         color: cyan
         font-weight: bold
         text-align: center
-        margin: 20% auto 0 auto
+        margin: 10em auto 0 auto
         max-width: 80%
         padding: 0.25em 1.5em
+        position: relative
         width: 400px
     
         h1
@@ -44,6 +45,22 @@
             margin: 0 0 2em 0
             padding: 0.5em
             text-transform: uppercase
+            
+        .hole
+            background-color: rgb(255, 255, 200)
+            border-radius: 1em
+            box-shadow: inset 0 2px 2px darken(yellow, 10%)
+            height: 2em
+            left: 12%
+            position: absolute
+            top: 59%
+            width: 2em
+            &:first-of-type
+                left: 10%
+                top: 69%
+            &:last-of-type
+                left: 17%
+                top: 89%
 
     .game-about
         color: rgb(180, 180, 180)
@@ -57,7 +74,7 @@
             margin: 0.5em 0
     
 #snap-stage
-    background: rgb(255, 255, 200)
+    background-color: rgb(255, 255, 200)
     box-shadow: inset 0 0 4px white
     display: block
     height: 100%
