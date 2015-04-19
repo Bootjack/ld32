@@ -7,9 +7,19 @@
 </head>
 <body>
     <div id="game-container">
-        <svg id="snap-stage" />
+        <svg id="snap-stage" width="400" height="600" />
         <div id="controls-curtain" class="curtain"></div>
-        <div id="splash-curtain" class="curtain"></div>
+        <div id="splash-curtain" class="curtain">
+            <div class="game-title">
+                <h1>Ticket Punch</h1>
+                <button class="start">Start</button>
+            </div>
+            <div class="game-about">
+                <p>A game by Jason Hinebaugh</p>
+                <p>Made for Ludum Dare #32</p>
+                <p>An Unconventional Weapon</p>
+            </div>
+        </div>
     </div>
     <script type="text/javascript" src="require.js" data-main="game.js"></script>
 </body>
