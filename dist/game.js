@@ -20587,7 +20587,7 @@ define('curtains/controls',['proscenium'], function (Proscenium) {
                 }
             }
             
-            $(this.element).on({
+            $stage.on({
                 vmousemove: adjustAim,
                 vmousedown: adjustAim,
                 vmouseup: adjustAim
@@ -20658,14 +20658,7 @@ define('roles/passenger',['proscenium'], function (Proscenium) {
     return {
         init: function () {
             this.set('radius', 20);
-        },
-        prep: function (config) {
-            config = config || {};
             this.set('punched', false);
-
-            this.set('x', config.x);
-            this.set('y', config.y);
-            this.set('destination', config.destination);
         }
     };
 });
@@ -20682,9 +20675,19 @@ define('scenes/title',['proscenium'], function (Proscenium) {
 define('scenes/train',['proscenium'], function (Proscenium) {
     var solved = {
         test: function () {
-            var conductor, exit, position;
+            var allPunched, conductor, endZone, passengers;
             conductor = Proscenium.actors.conductor;
-            return (conductor.state.atExit);
+            passengers = Proscenium.roles.passenger.members;
+            endZone = Proscenium.actors.endZone;
+            
+            atExit = conductor.state.atExit;
+            allPunched = passengers.every(function (passenger) {
+                return passenger.state.punched;
+            });
+
+            endZone.set('unlocked', allPunched);
+            
+            return (allPunched && atExit);
         },
         run: function () {
             Proscenium.scenes.train.end();
@@ -20709,7 +20712,7 @@ define('scenes/train',['proscenium'], function (Proscenium) {
             
             conductor = Proscenium.actors.conductor;
             safeZone = Proscenium.actor('safeZone');
-            endZone = Proscenium.actor('endZone');
+            endZone = Proscenium.actor('endZone').set('unlocked', false);
             
             passengers = [Proscenium.actor().role('passenger').set('x', 100).set('y', 240)];
 
@@ -20741,20 +20744,33 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
         return Math.max(lower, Math.min(val, upper));
     }    
     
+    function distance(a, b) {
+        var delta = {
+            x: a.state.x - b.state.x,
+            y: a.state.y - b.state.y
+        };
+        return Math.sqrt(Math.pow(delta.x, 2) + Math.pow(delta.y, 2));
+    }    
+
     return {
         init: function () {
             this.snap = Snap('#snap-stage');
+            this.passengerNearConductorFilter = this.snap.filter(
+                Snap.filter.shadow(0, 0, 4, 'cyan', 0.85)
+            );
         },
         prep: function (config) {
             config = config || {};
-            var conductor, endZone, passengers, safeZone;
+            var conductor, endZone, passengers, safeZone, snap;
+            
+            snap = this.snap;
             
             conductor = Proscenium.actors.conductor;
-            passengers = Proscenium.roles.passengers.members;
+            passengers = Proscenium.roles.passenger.members;
             endZone = Proscenium.actors.endZone;
             safeZone = Proscenium.actors.safeZone;
             
-            safeZone.svg = this.snap.path(
+            safeZone.svg = snap.path(
                 'M' + safeZone.state.bounds[0].x + ',' + safeZone.state.bounds[0].y +
                 'L' + safeZone.state.bounds[1].x + ',' + safeZone.state.bounds[0].y +
                 'L' + safeZone.state.bounds[1].x + ',' + safeZone.state.bounds[1].y +
@@ -20762,7 +20778,7 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
                 'Z'
             ).addClass('safe-zone');
             
-            endZone.svg = this.snap.path(
+            endZone.svg = snap.path(
                 'M' + endZone.state.bounds[0].x + ',' + endZone.state.bounds[0].y +
                 'L' + endZone.state.bounds[1].x + ',' + endZone.state.bounds[0].y +
                 'L' + endZone.state.bounds[1].x + ',' + endZone.state.bounds[1].y +
@@ -20770,7 +20786,7 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
                 'Z'
             ).addClass('end-zone');
             
-            conductor.svg = this.snap.circle(
+            conductor.svg = snap.circle(
                 conductor.state.x,
                 conductor.state.y,
                 conductor.state.radius
@@ -20778,22 +20794,49 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
             conductor.svg.addClass('conductor');
             
             passengers.forEach(function (passenger) {
-                passenger.svg = this.snap.circle(
+                passenger.svg = snap.circle(
                     passenger.state.x,
                     passenger.state.y,
                     passenger.state.radius
-                );
-            }.bind(this)).addClass('passenger');
+                ).addClass('passenger');
+               
+                passenger.svg.mousedown(function (event) {
+                    event.stopPropagation();
+
+                    if (distance(passenger, conductor) < 4 * conductor.state.radius) {
+                        passenger.set('punched', true);
+                    }
+                });
+            });
         },
         evaluate: function () {
-            var conductor, conductorPosition, endZone, inEndZone, inSafeZone, safeZone, safeZoneBounds;
+            var conductor, conductorPosition, endZone, inEndZone, inSafeZone, passengers, 
+                passengerNearConductorFilter, safeZone, safeZoneBounds;
             
             conductor = Proscenium.actors.conductor;
+            passengers = Proscenium.roles.passenger.members;
             endZone = Proscenium.actors.endZone;
             safeZone = Proscenium.actors.safeZone;
             safeZoneBounds = safeZone.state.bounds;
+            
+            passengerNearConductorFilter = this.passengerNearConductorFilter;
                         
             conductorPosition = {x: conductor.state.x, y: conductor.state.y};
+            
+            passengers.forEach(function (passenger) {
+                if (distance(passenger, conductor) < 4 * conductor.state.radius) {
+                    passenger.svg.addClass('near-conductor');
+                    passenger.svg.attr({
+                        filter: passengerNearConductorFilter
+                    });
+                } else {
+                    passenger.svg.removeClass('near-conductor');
+                    passenger.svg.attr({
+                        filter: null
+                    });
+                }
+                passenger.svg.toggleClass('punched', passenger.state.punched);
+            });
             
             inSafeZone = Snap.path.isPointInside(safeZone.svg, conductorPosition.x, conductorPosition.y);
             
@@ -20809,6 +20852,7 @@ define('stages/snap',['snap', 'proscenium'], function (Snap, Proscenium) {
             conductor.svg.attr('cx', conductor.state.x);
             conductor.svg.attr('cy', conductor.state.y);
             
+            endZone.svg.toggleClass('unlocked', endZone.state.unlocked);
             inEndZone = Snap.path.isPointInside(endZone.svg, conductorPosition.x, conductorPosition.y);
             if (inEndZone) {
                 conductor.set('atExit', true);
