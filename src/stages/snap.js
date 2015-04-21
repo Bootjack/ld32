@@ -13,8 +13,20 @@ define(['snap', 'proscenium'], function (Snap, Proscenium) {
     }    
 
     return {
+        throttle: 45,
         init: function () {
+            var $game, matrix, scale;
+            
             this.snap = Snap('#snap-stage');
+            $game = $('#game-container');
+            scale = Math.min(
+                this.snap.node.offsetWidth / this.snap.attr('width'),
+                this.snap.node.offsetHeight / this.snap.attr('height')
+            );
+
+            matrix = new Snap.matrix().scale(scale);
+            this.snap.transform(matrix);
+            
             this.passengerNearConductorFilter = this.snap.filter(
                 Snap.filter.shadow(0, 0, 4, 'cyan', 0.85)
             );
